@@ -4,8 +4,8 @@ spring:
       client:
         registration:
           google:
-            client-id: 122311902394-pako6mrgj1uu1jqnvclrdrlgr8l0uigd.apps.googleusercontent.com
-            client-secret: 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
+            client-id: 122311902394-mi66gcakhtecn8gsuv6ls87icthhk1tj.apps.googleusercontent.com
+            client-secret: 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
             redirect-uri: "{baseUrl}/login/oauth2/code/{registrationId}"
             scope:
               - openid
