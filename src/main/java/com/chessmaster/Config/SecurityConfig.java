@@ -44,6 +44,21 @@ public class SecurityConfig {
     //     return resolver;
     // }
 
+    @Bean
+    public CorsConfigurationSource corsConfigurationSource() {
+        CorsConfiguration config = new CorsConfiguration();
+        config.setAllowedOrigins(List.of("http://localhost:3000")); // Allow local dev
+        config.setAllowCredentials(true); // Allow cookies
+        config.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS")); // Preflight methods
+        config.setAllowedHeaders(List.of("Authorization", "Cache-Control", "Content-Type")); // Allow headers
+        config.setExposedHeaders(List.of("Authorization", "Set-Cookie"));
+    
+        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
+        source.registerCorsConfiguration("/**", config);
+        return source;
+    }
+
+
 
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
