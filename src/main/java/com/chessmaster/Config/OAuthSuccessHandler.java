@@ -47,7 +47,7 @@ public class OAuthSuccessHandler implements AuthenticationSuccessHandler {
 
 
         // Redirect to frontend without token in URL
-        response.sendRedirect("https://chess-frontend-ezf1.vercel.app/");
+        response.sendRedirect("https://chess-frontend-ashy.vercel.app/");
     }
 }
 
