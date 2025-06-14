@@ -6,7 +6,7 @@ spring:
           google:
             client-id: 122311902394-mi66gcakhtecn8gsuv6ls87icthhk1tj.apps.googleusercontent.com
             client-secret: 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
-            redirect-uri: "{baseUrl}/login/oauth2/code/{registrationId}"
+            redirect-uri: "https://chessbackend-production.up.railway.app/login/oauth2/code/{registrationId}"
             scope:
               - openid
               - profile
