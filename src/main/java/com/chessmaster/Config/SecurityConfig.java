@@ -56,19 +56,19 @@ public class SecurityConfig {
     //     return resolver;
     // }
 
-    @Bean
-    public CorsConfigurationSource corsConfigurationSource() {
-        CorsConfiguration config = new CorsConfiguration();
-        config.setAllowedOrigins(List.of("http://localhost:3000")); // Allow local dev
-        config.setAllowCredentials(true); // Allow cookies
-        config.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS")); // Preflight methods
-        config.setAllowedHeaders(List.of("Authorization", "Cache-Control", "Content-Type")); // Allow headers
-        config.setExposedHeaders(List.of("Authorization", "Set-Cookie"));
+    // @Bean
+    // public CorsConfigurationSource corsConfigurationSource() {
+    //     CorsConfiguration config = new CorsConfiguration();
+    //     config.setAllowedOrigins(List.of("http://localhost:3000")); // Allow local dev
+    //     config.setAllowCredentials(true); // Allow cookies
+    //     config.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS")); // Preflight methods
+    //     config.setAllowedHeaders(List.of("Authorization", "Cache-Control", "Content-Type")); // Allow headers
+    //     config.setExposedHeaders(List.of("Authorization", "Set-Cookie"));
     
-        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
-        source.registerCorsConfiguration("/**", config);
-        return source;
-    }
+    //     UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
+    //     source.registerCorsConfiguration("/**", config);
+    //     return source;
+    // }
 
 
 
@@ -78,7 +78,7 @@ public class SecurityConfig {
     .cors(Customizer.withDefaults()) // Enable CORS
     .csrf().disable() // (optional) if you're not using CSRF protection
     .authorizeHttpRequests()
-        .requestMatchers("/logout", "/login/**", "/oauth2/**").permitAll()
+        .requestMatchers("/logout", "/login/**", "/oauth2/**", "/*").permitAll()
         .anyRequest().authenticated()
     .and()
     .oauth2Login()
