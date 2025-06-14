@@ -82,7 +82,7 @@ public class SecurityConfig {
         .anyRequest().authenticated()
     .and()
     .oauth2Login()
-    .defaultSuccessUrl("http://localhost:3000/Start", true)
+    .defaultSuccessUrl("https://chess-frontend-ezf1.vercel.app//Start", true)
     .and()
     .logout()
         .logoutUrl("/logout")
@@ -105,7 +105,7 @@ public class SecurityConfig {
             @Override
             public void addCorsMappings(CorsRegistry registry) {
                 registry.addMapping("/**")
-                    .allowedOrigins("http://localhost:3000")
+                    .allowedOrigins("https://chess-frontend-ezf1.vercel.app/")
                     .allowedMethods("GET", "POST", "PUT", "DELETE", "OPTIONS")
                     .allowCredentials(true)
                     .allowedHeaders("*")
