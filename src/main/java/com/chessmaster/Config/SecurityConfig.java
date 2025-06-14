@@ -31,18 +31,18 @@ public class SecurityConfig {
 
 
 
-    @Bean
-    public OAuth2AuthorizationRequestResolver customAuthorizationRequestResolver(ClientRegistrationRepository repo) {
-        DefaultOAuth2AuthorizationRequestResolver resolver =
-            new DefaultOAuth2AuthorizationRequestResolver(repo, "/oauth2/authorization");
+    // @Bean
+    // public OAuth2AuthorizationRequestResolver customAuthorizationRequestResolver(ClientRegistrationRepository repo) {
+    //     DefaultOAuth2AuthorizationRequestResolver resolver =
+    //         new DefaultOAuth2AuthorizationRequestResolver(repo, "/oauth2/authorization");
 
-        resolver.setAuthorizationRequestCustomizer(builder ->
-            builder.additionalParameters(params -> {
-                params.put("prompt", "consent"); // or "select_account"
-            })
-        );
-        return resolver;
-    }
+    //     resolver.setAuthorizationRequestCustomizer(builder ->
+    //         builder.additionalParameters(params -> {
+    //             params.put("prompt", "consent"); // or "select_account"
+    //         })
+    //     );
+    //     return resolver;
+    // }
 
 
     @Bean
