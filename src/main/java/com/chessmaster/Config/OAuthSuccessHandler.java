@@ -42,7 +42,7 @@ public class OAuthSuccessHandler implements AuthenticationSuccessHandler {
         jwtCookie.setPath("/");
         jwtCookie.setMaxAge(24 * 60 * 60);
         // jwtCookie.setDomain("localhost"); // Optional for dev
-        // jwtCookie.setAttribute("SameSite", "None"); // Add this line if possible (Servlet 6 or newer)
+        jwtCookie.setAttribute("SameSite", "None"); // Add this line if possible (Servlet 6 or newer)
         response.addCookie(jwtCookie);
 
 
