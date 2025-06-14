@@ -19,18 +19,24 @@ public class TokenController {
 
     @GetMapping("/token")
     public ResponseEntity<?> getTokenFromCookie(HttpServletRequest request) {
-        String jwt = Arrays.stream(request.getCookies())
-                .filter(cookie -> "jwt".equals(cookie.getName()))
+        Cookie[] cookies = request.getCookies();
+        if (cookies == null) {
+            return ResponseEntity.status(401).body(Map.of("error", "No cookies present"));
+        }
+    
+        String jwt = Arrays.stream(cookies)
+                .filter(cookie -> "token".equals(cookie.getName())) // FIXED: "token"
                 .findFirst()
                 .map(Cookie::getValue)
                 .orElse(null);
-
+    
         if (jwt == null) {
             return ResponseEntity.status(401).body(Map.of("error", "JWT token not found in cookies"));
         }
-
+    
         return ResponseEntity.ok(Map.of("token", jwt));
     }
+
 
     @PostMapping("/logout")
     public ResponseEntity<?> logout(HttpServletResponse response) {
