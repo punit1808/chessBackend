@@ -72,31 +72,61 @@ public class SecurityConfig {
 
 
 
+    // @Bean
+    // public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
+    //     http
+    // .cors(Customizer.withDefaults()) // Enable CORS
+    // .csrf().disable() // (optional) if you're not using CSRF protection
+    // .authorizeHttpRequests()
+    //     .requestMatchers("/logout", "/login/**", "/oauth2/**").permitAll()
+    //     .anyRequest().authenticated()
+    // .and()
+    // .oauth2Login()
+    // .defaultSuccessUrl("https://chess-frontend-ashy.vercel.app/Start", true)
+    // .and()
+    // .logout()
+    //     .logoutUrl("/logout")
+    //     .logoutSuccessHandler((request, response, authentication) -> {
+    //         ResponseCookie cookie = ResponseCookie.from("token", "")
+    //             .httpOnly(true)
+    //             .path("/")
+    //             .maxAge(0)
+    //             .build();
+    //         response.setHeader(HttpHeaders.SET_COOKIE, cookie.toString());
+    //         response.setStatus(HttpServletResponse.SC_OK);
+    //     });
+    //     return http.build();
+    // }
+
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
-    .cors(Customizer.withDefaults()) // Enable CORS
-    .csrf().disable() // (optional) if you're not using CSRF protection
-    .authorizeHttpRequests()
-        .requestMatchers("/logout", "/login/**", "/oauth2/**").permitAll()
-        .anyRequest().authenticated()
-    .and()
-    .oauth2Login()
-    .defaultSuccessUrl("https://chess-frontend-ashy.vercel.app/Start", true)
-    .and()
-    .logout()
-        .logoutUrl("/logout")
-        .logoutSuccessHandler((request, response, authentication) -> {
-            ResponseCookie cookie = ResponseCookie.from("token", "")
-                .httpOnly(true)
-                .path("/")
-                .maxAge(0)
-                .build();
-            response.setHeader(HttpHeaders.SET_COOKIE, cookie.toString());
-            response.setStatus(HttpServletResponse.SC_OK);
-        });
+            .cors(Customizer.withDefaults())
+            .csrf().disable()
+            .authorizeHttpRequests()
+                .requestMatchers("/logout", "/login/**", "/oauth2/**").permitAll()
+                .anyRequest().authenticated()
+            .and()
+            .oauth2Login()
+                .successHandler(successHandler) // ✅ THIS IS MANDATORY if you're using OAuthSuccessHandler
+            .and()
+            .logout()
+                .logoutUrl("/logout")
+                .logoutSuccessHandler((request, response, authentication) -> {
+                    ResponseCookie cookie = ResponseCookie.from("jwt", "")
+                        .httpOnly(true)
+                        .secure(true)
+                        .path("/")
+                        .sameSite("None")
+                        .maxAge(0)
+                        .build();
+                    response.setHeader(HttpHeaders.SET_COOKIE, cookie.toString());
+                    response.setStatus(HttpServletResponse.SC_OK);
+                });
+
         return http.build();
     }
+
 
 
     @Bean
