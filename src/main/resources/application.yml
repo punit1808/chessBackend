@@ -21,5 +21,3 @@ app:
     secret: my-super-secret-key-that-is-very-long
     expiration: 3600000 # 1 hour
 
-server:
-  forward-headers-strategy: framework
