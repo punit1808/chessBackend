@@ -78,7 +78,7 @@ public class SecurityConfig {
     .cors(Customizer.withDefaults()) // Enable CORS
     .csrf().disable() // (optional) if you're not using CSRF protection
     .authorizeHttpRequests()
-        .requestMatchers("/logout", "/login/**", "/oauth2/**","/**").permitAll()
+        .requestMatchers("/logout", "/login/**", "/oauth2/**").permitAll()
         .anyRequest().authenticated()
     .and()
     .oauth2Login()
@@ -105,7 +105,7 @@ public class SecurityConfig {
             @Override
             public void addCorsMappings(CorsRegistry registry) {
                 registry.addMapping("/**")
-                    .allowedOrigins("https://chess-frontend-ashy.vercel.app/")
+                    .allowedOrigins("https://chess-frontend-ashy.vercel.app")
                     .allowedMethods("GET", "POST", "PUT", "DELETE", "OPTIONS")
                     .allowCredentials(true)
                     .allowedHeaders("*")
