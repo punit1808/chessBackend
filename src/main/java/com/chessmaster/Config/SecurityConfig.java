@@ -16,6 +16,7 @@ import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
 import org.springframework.security.oauth2.client.registration.ClientRegistrationRepository;
 import org.springframework.security.oauth2.client.web.DefaultOAuth2AuthorizationRequestResolver;
@@ -29,6 +30,123 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 import org.springframework.web.servlet.config.annotation.CorsRegistry;
 
 
+// @Configuration
+// @EnableWebSecurity
+// public class SecurityConfig {
+
+//     private final JwtAuthFilter jwtAuthFilter;
+//     private final OAuthSuccessHandler successHandler;
+
+//     public SecurityConfig(JwtAuthFilter jwtAuthFilter, OAuthSuccessHandler successHandler) {
+//         this.jwtAuthFilter = jwtAuthFilter;
+//         this.successHandler = successHandler;
+//     }
+
+
+
+//     // @Bean
+//     // public OAuth2AuthorizationRequestResolver customAuthorizationRequestResolver(ClientRegistrationRepository repo) {
+//     //     DefaultOAuth2AuthorizationRequestResolver resolver =
+//     //         new DefaultOAuth2AuthorizationRequestResolver(repo, "/oauth2/authorization");
+
+//     //     resolver.setAuthorizationRequestCustomizer(builder ->
+//     //         builder.additionalParameters(params -> {
+//     //             params.put("prompt", "consent"); // or "select_account"
+//     //         })
+//     //     );
+//     //     return resolver;
+//     // }
+
+//     // @Bean
+//     // public CorsConfigurationSource corsConfigurationSource() {
+//     //     CorsConfiguration config = new CorsConfiguration();
+//     //     config.setAllowedOrigins(List.of("http://localhost:3000")); // Allow local dev
+//     //     config.setAllowCredentials(true); // Allow cookies
+//     //     config.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS")); // Preflight methods
+//     //     config.setAllowedHeaders(List.of("Authorization", "Cache-Control", "Content-Type")); // Allow headers
+//     //     config.setExposedHeaders(List.of("Authorization", "Set-Cookie"));
+    
+//     //     UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
+//     //     source.registerCorsConfiguration("/**", config);
+//     //     return source;
+//     // }
+
+
+// // old one
+//     @Bean
+//     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
+//         http
+//     .cors(Customizer.withDefaults()) // Enable CORS
+//     .csrf().disable() // (optional) if you're not using CSRF protection
+//     .authorizeHttpRequests()
+//         .requestMatchers("/logout", "/login/**", "/oauth2/**").permitAll()
+//         .anyRequest().authenticated()
+//     .and()
+//     .oauth2Login()
+//     .defaultSuccessUrl("https://chess-frontend-ashy.vercel.app/Start", true)
+//     .and()
+//     .logout()
+//         .logoutUrl("/logout")
+//         .logoutSuccessHandler((request, response, authentication) -> {
+//             ResponseCookie cookie = ResponseCookie.from("token", "")
+//                 .httpOnly(true)
+//                 .path("/")
+//                 .maxAge(0)
+//                 .build();
+//             response.setHeader(HttpHeaders.SET_COOKIE, cookie.toString());
+//             response.setStatus(HttpServletResponse.SC_OK);
+//         });
+//         return http.build();
+//     }
+
+//     // @Bean
+//     // public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
+//     //     http
+//     //         .cors(Customizer.withDefaults())
+//     //         .csrf().disable()
+//     //         .authorizeHttpRequests()
+//     //             .requestMatchers("/logout", "/login/**", "/oauth2/**").permitAll()
+//     //             .anyRequest().authenticated()
+//     //         .and()
+//     //         .oauth2Login()
+//     //             .successHandler(successHandler) // ✅ THIS IS MANDATORY if you're using OAuthSuccessHandler
+//     //         .and()
+//     //         .logout()
+//     //             .logoutUrl("/logout")
+//     //             .logoutSuccessHandler((request, response, authentication) -> {
+//     //                 ResponseCookie cookie = ResponseCookie.from("jwt", "")
+//     //                     .httpOnly(true)
+//     //                     .secure(true)
+//     //                     .path("/")
+//     //                     .sameSite("None")
+//     //                     .maxAge(0)
+//     //                     .build();
+//     //                 response.setHeader(HttpHeaders.SET_COOKIE, cookie.toString());
+//     //                 response.setStatus(HttpServletResponse.SC_OK);
+//     //             });
+
+//     //     return http.build();
+//     // }
+
+
+
+//     @Bean
+//     public WebMvcConfigurer corsConfigurer() {
+//         return new WebMvcConfigurer() {
+//             @Override
+//             public void addCorsMappings(CorsRegistry registry) {
+//                 registry.addMapping("/**")
+//                     .allowedOrigins("https://chess-frontend-ashy.vercel.app")
+//                     .allowedMethods("GET", "POST", "PUT", "DELETE", "OPTIONS")
+//                     .allowCredentials(true)
+//                     .allowedHeaders("*")
+//                     .exposedHeaders("Set-Cookie"); // Important for cookies
+//             }
+//         };
+//     }
+
+// }
+
 @Configuration
 @EnableWebSecurity
 public class SecurityConfig {
@@ -41,107 +159,48 @@ public class SecurityConfig {
         this.successHandler = successHandler;
     }
 
+    @Bean
+    public CorsConfigurationSource corsConfigurationSource() {
+        CorsConfiguration config = new CorsConfiguration();
+        config.setAllowedOrigins(List.of("https://chess-frontend-ashy.vercel.app"));
+        config.setAllowCredentials(true);
+        config.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
+        config.setAllowedHeaders(List.of("*"));
+        config.setExposedHeaders(List.of("Set-Cookie", "Authorization"));
+        
+        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
+        source.registerCorsConfiguration("/**", config);
+        return source;
+    }
 
-
-    // @Bean
-    // public OAuth2AuthorizationRequestResolver customAuthorizationRequestResolver(ClientRegistrationRepository repo) {
-    //     DefaultOAuth2AuthorizationRequestResolver resolver =
-    //         new DefaultOAuth2AuthorizationRequestResolver(repo, "/oauth2/authorization");
-
-    //     resolver.setAuthorizationRequestCustomizer(builder ->
-    //         builder.additionalParameters(params -> {
-    //             params.put("prompt", "consent"); // or "select_account"
-    //         })
-    //     );
-    //     return resolver;
-    // }
-
-    // @Bean
-    // public CorsConfigurationSource corsConfigurationSource() {
-    //     CorsConfiguration config = new CorsConfiguration();
-    //     config.setAllowedOrigins(List.of("http://localhost:3000")); // Allow local dev
-    //     config.setAllowCredentials(true); // Allow cookies
-    //     config.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS")); // Preflight methods
-    //     config.setAllowedHeaders(List.of("Authorization", "Cache-Control", "Content-Type")); // Allow headers
-    //     config.setExposedHeaders(List.of("Authorization", "Set-Cookie"));
-    
-    //     UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
-    //     source.registerCorsConfiguration("/**", config);
-    //     return source;
-    // }
-
-
-// old one
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
-    .cors(Customizer.withDefaults()) // Enable CORS
-    .csrf().disable() // (optional) if you're not using CSRF protection
-    .authorizeHttpRequests()
-        .requestMatchers("/logout", "/login/**", "/oauth2/**").permitAll()
-        .anyRequest().authenticated()
-    .and()
-    .oauth2Login()
-    .defaultSuccessUrl("https://chess-frontend-ashy.vercel.app/Start", true)
-    .and()
-    .logout()
-        .logoutUrl("/logout")
-        .logoutSuccessHandler((request, response, authentication) -> {
-            ResponseCookie cookie = ResponseCookie.from("token", "")
-                .httpOnly(true)
-                .path("/")
-                .maxAge(0)
-                .build();
-            response.setHeader(HttpHeaders.SET_COOKIE, cookie.toString());
-            response.setStatus(HttpServletResponse.SC_OK);
-        });
+            .cors(cors -> cors.configurationSource(corsConfigurationSource()))
+            .csrf().disable()
+            .authorizeHttpRequests(auth -> auth
+                .requestMatchers("/logout", "/login/**", "/oauth2/**", "/api/test").permitAll()
+                .anyRequest().authenticated()
+            )
+            .oauth2Login(oauth -> oauth
+                .successHandler(successHandler)
+            )
+            .logout(logout -> logout
+                .logoutUrl("/logout")
+                .logoutSuccessHandler((request, response, authentication) -> {
+                    ResponseCookie cookie = ResponseCookie.from("token", "")
+                        .httpOnly(true)
+                        .secure(true)
+                        .path("/")
+                        .sameSite("None")
+                        .maxAge(0)
+                        .build();
+                    response.setHeader(HttpHeaders.SET_COOKIE, cookie.toString());
+                    response.setStatus(HttpServletResponse.SC_OK);
+                })
+            )
+            .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class);
+        
         return http.build();
     }
-
-    // @Bean
-    // public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
-    //     http
-    //         .cors(Customizer.withDefaults())
-    //         .csrf().disable()
-    //         .authorizeHttpRequests()
-    //             .requestMatchers("/logout", "/login/**", "/oauth2/**").permitAll()
-    //             .anyRequest().authenticated()
-    //         .and()
-    //         .oauth2Login()
-    //             .successHandler(successHandler) // ✅ THIS IS MANDATORY if you're using OAuthSuccessHandler
-    //         .and()
-    //         .logout()
-    //             .logoutUrl("/logout")
-    //             .logoutSuccessHandler((request, response, authentication) -> {
-    //                 ResponseCookie cookie = ResponseCookie.from("jwt", "")
-    //                     .httpOnly(true)
-    //                     .secure(true)
-    //                     .path("/")
-    //                     .sameSite("None")
-    //                     .maxAge(0)
-    //                     .build();
-    //                 response.setHeader(HttpHeaders.SET_COOKIE, cookie.toString());
-    //                 response.setStatus(HttpServletResponse.SC_OK);
-    //             });
-
-    //     return http.build();
-    // }
-
-
-
-    @Bean
-    public WebMvcConfigurer corsConfigurer() {
-        return new WebMvcConfigurer() {
-            @Override
-            public void addCorsMappings(CorsRegistry registry) {
-                registry.addMapping("/**")
-                    .allowedOrigins("https://chess-frontend-ashy.vercel.app")
-                    .allowedMethods("GET", "POST", "PUT", "DELETE", "OPTIONS")
-                    .allowCredentials(true)
-                    .allowedHeaders("*")
-                    .exposedHeaders("Set-Cookie"); // Important for cookies
-            }
-        };
-    }
-
 }
