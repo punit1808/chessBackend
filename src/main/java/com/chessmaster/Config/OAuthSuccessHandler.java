@@ -34,11 +34,11 @@ public class OAuthSuccessHandler implements AuthenticationSuccessHandler {
         OAuth2User oAuth2User = (OAuth2User) authentication.getPrincipal();
         String email = oAuth2User.getAttribute("email");
 
-        String token = jwtService.generateToken(email);
+        String jwt = jwtService.generateToken(email);
 
         // Create secure HTTP-only cookie
-        
-        ResponseCookie cookie = ResponseCookie.from("jwt", token)
+        // interchanged
+        ResponseCookie cookie = ResponseCookie.from("token", jwt)
             .httpOnly(true)
             .secure(true)
             .path("/")
