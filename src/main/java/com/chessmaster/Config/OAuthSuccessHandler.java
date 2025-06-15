@@ -40,16 +40,14 @@ public class OAuthSuccessHandler implements AuthenticationSuccessHandler {
         // interchanged
         ResponseCookie cookie = ResponseCookie.from("token", token)
             .httpOnly(true)
-            .secure(true)
             .path("/")
+            .secure(true)
             .sameSite("None") // This actually works and is portable
             .maxAge(Duration.ofDays(1))
             .build();
         
         response.setHeader("Set-Cookie", cookie.toString());
 
-        System.out.println("Redirecting to frontend after successful login...");
-        System.out.println("Redirect URL: https://chess-frontend-ashy.vercel.app/");
 
         response.sendRedirect("https://chess-frontend-ashy.vercel.app");
     }
