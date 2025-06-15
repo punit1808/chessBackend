@@ -34,11 +34,11 @@ public class OAuthSuccessHandler implements AuthenticationSuccessHandler {
         OAuth2User oAuth2User = (OAuth2User) authentication.getPrincipal();
         String email = oAuth2User.getAttribute("email");
 
-        String jwt = jwtService.generateToken(email);
+        String token = jwtService.generateToken(email);
 
         // Create secure HTTP-only cookie
         // interchanged
-        ResponseCookie cookie = ResponseCookie.from("token", jwt)
+        ResponseCookie cookie = ResponseCookie.from("token", token)
             .httpOnly(true)
             .secure(true)
             .path("/")
@@ -47,7 +47,7 @@ public class OAuthSuccessHandler implements AuthenticationSuccessHandler {
             .build();
         
         response.setHeader("Set-Cookie", cookie.toString());
-        response.sendRedirect("https://chess-frontend-ashy.vercel.app/");
+        response.sendRedirect("https://chess-frontend-ashy.vercel.app");
     }
 }
 
