@@ -36,17 +36,16 @@ public class OAuthSuccessHandler implements AuthenticationSuccessHandler {
         String token = jwtService.generateToken(email);
 
         // Create secure HTTP-only cookie
-        Cookie jwtCookie = new Cookie("jwt", token);
-        jwtCookie.setHttpOnly(true);
-        jwtCookie.setSecure(true); // Required for SameSite=None
-        jwtCookie.setPath("/");
-        jwtCookie.setMaxAge(24 * 60 * 60);
-        // jwtCookie.setDomain("localhost"); // Optional for dev
-        jwtCookie.setAttribute("SameSite", "None"); // Add this line if possible (Servlet 6 or newer)
-        response.addCookie(jwtCookie);
-
-
-        // Redirect to frontend without token in URL
+        
+        ResponseCookie cookie = ResponseCookie.from("jwt", token)
+            .httpOnly(true)
+            .secure(true)
+            .path("/")
+            .sameSite("None") // This actually works and is portable
+            .maxAge(Duration.ofDays(1))
+            .build();
+        
+        response.setHeader("Set-Cookie", cookie.toString());
         response.sendRedirect("https://chess-frontend-ashy.vercel.app/");
     }
 }
