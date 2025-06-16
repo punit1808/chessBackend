@@ -72,14 +72,48 @@ public class SecurityConfig {
 
 
 
-// old one
+// new filter
+    @Bean
+public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
+    http
+        .cors(Customizer.withDefaults())
+        .csrf().disable()
+        .authorizeHttpRequests()
+            .requestMatchers("/logout", "/login/**", "/oauth2/**", "/token").permitAll()
+            .anyRequest().authenticated()
+        .and()
+        .oauth2Login()
+            .successHandler(successHandler) // ✅ using custom success handler
+        .and()
+        .logout()
+            .logoutUrl("/logout")
+            .logoutSuccessHandler((request, response, authentication) -> {
+                ResponseCookie cookie = ResponseCookie.from("token", "")
+                    .httpOnly(true)
+                    .secure(true)
+                    .sameSite("None")
+                    .path("/")
+                    .maxAge(0)
+                    .build();
+                response.setHeader(HttpHeaders.SET_COOKIE, cookie.toString());
+                response.setStatus(HttpServletResponse.SC_OK);
+            });
+
+    http.addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class); // ✅ include JWT filter
+
+    return http.build();
+}
+
+
+
+    // from chessGame SecurityConfig
     // @Bean
     // public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
     //     http
     // .cors(Customizer.withDefaults()) // Enable CORS
     // .csrf().disable() // (optional) if you're not using CSRF protection
     // .authorizeHttpRequests()
-    //     .requestMatchers("/logout", "/login/**", "/oauth2/**","/**").permitAll()
+    //     .requestMatchers("/logout", "/login/**", "/oauth2/**","/token").permitAll()
     //     .anyRequest().authenticated()
     // .and()
     // .oauth2Login()
@@ -98,34 +132,6 @@ public class SecurityConfig {
     //     });
     //     return http.build();
     // }
-
-
-    // from chessGame SecurityConfig
-    @Bean
-    public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
-        http
-    .cors(Customizer.withDefaults()) // Enable CORS
-    .csrf().disable() // (optional) if you're not using CSRF protection
-    .authorizeHttpRequests()
-        .requestMatchers("/logout", "/login/**", "/oauth2/**","/token").permitAll()
-        .anyRequest().authenticated()
-    .and()
-    .oauth2Login()
-    .defaultSuccessUrl("https://chess-frontend-ashy.vercel.app/Start", true)
-    .and()
-    .logout()
-        .logoutUrl("/logout")
-        .logoutSuccessHandler((request, response, authentication) -> {
-            ResponseCookie cookie = ResponseCookie.from("token", "")
-                .httpOnly(true)
-                .path("/")
-                .maxAge(0)
-                .build();
-            response.setHeader(HttpHeaders.SET_COOKIE, cookie.toString());
-            response.setStatus(HttpServletResponse.SC_OK);
-        });
-        return http.build();
-    }
 
 
 
