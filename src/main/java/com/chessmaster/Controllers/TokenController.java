@@ -20,6 +20,7 @@ public class TokenController {
     @GetMapping("/token")
     public ResponseEntity<?> getTokenFromCookie(HttpServletRequest request) {
         Cookie[] cookies = request.getCookies();
+        
         if (cookies == null) {
             return ResponseEntity.status(401).body(Map.of("error", "No cookies present"));
         }
