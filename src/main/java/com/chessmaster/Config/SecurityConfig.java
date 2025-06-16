@@ -73,7 +73,7 @@ public class SecurityConfig {
 
 
 // new filter
-    @Bean
+@Bean
 public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
     http
         .cors(Customizer.withDefaults())
@@ -82,8 +82,23 @@ public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
             .requestMatchers("/logout", "/login/**", "/oauth2/**", "/token").permitAll()
             .anyRequest().authenticated()
         .and()
+        .exceptionHandling()
+            .authenticationEntryPoint((request, response, authException) -> {
+                String xhrHeader = request.getHeader("X-Requested-With");
+                if ("XMLHttpRequest".equalsIgnoreCase(xhrHeader)) {
+                    response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+                    response.setContentType("application/json");
+                    response.getWriter().write("{\"error\": \"Unauthorized\"}");
+                } else {
+                    response.sendRedirect("/oauth2/authorization/google");
+                }
+            })
+        .and()
         .oauth2Login()
-            .successHandler(successHandler) // ✅ using custom success handler
+            .authorizationEndpoint()
+                .authorizationRequestResolver(customAuthorizationRequestResolver(null)) // inject repo if needed
+                .and()
+            .successHandler(successHandler)
         .and()
         .logout()
             .logoutUrl("/logout")
@@ -99,10 +114,11 @@ public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
                 response.setStatus(HttpServletResponse.SC_OK);
             });
 
-    http.addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class); // ✅ include JWT filter
+    http.addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class);
 
     return http.build();
 }
+
 
 
 
