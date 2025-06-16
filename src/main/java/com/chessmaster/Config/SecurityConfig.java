@@ -79,7 +79,7 @@ public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         .cors(Customizer.withDefaults())
         .csrf().disable()
         .authorizeHttpRequests()
-            .requestMatchers("/logout", "/login/**", "/oauth2/**", "/token").permitAll()
+            .requestMatchers("/logout", "/login/**", "/oauth2/**", "/token","/**").permitAll()
             .anyRequest().authenticated()
         .and()
         .exceptionHandling()
