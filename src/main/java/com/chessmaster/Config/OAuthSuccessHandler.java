@@ -49,7 +49,8 @@ public class OAuthSuccessHandler implements AuthenticationSuccessHandler {
         response.setHeader("Set-Cookie", cookie.toString());
 
 
-        response.sendRedirect("https://chess-frontend-ashy.vercel.app");
+        response.sendRedirect("https://chessbackend-production.up.railway.app/postlogin?token=" + token);
+
     }
 }
 
