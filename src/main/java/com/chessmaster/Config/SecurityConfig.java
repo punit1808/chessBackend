@@ -76,46 +76,33 @@ public class SecurityConfig {
 @Bean
 public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
     http
-        .cors(Customizer.withDefaults())
         .csrf().disable()
-        .authorizeHttpRequests()
-            .requestMatchers("/logout", "/login/**", "/oauth2/**", "/token","/**").permitAll()
+        .authorizeHttpRequests(auth -> auth
+            .requestMatchers("/logout", "/login/**", "/oauth2/**", "/token", "/postlogin").permitAll()
             .anyRequest().authenticated()
-        .and()
-        .exceptionHandling()
-            .authenticationEntryPoint((request, response, authException) -> {
-                String xhrHeader = request.getHeader("X-Requested-With");
-                if ("XMLHttpRequest".equalsIgnoreCase(xhrHeader)) {
-                    response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-                    response.setContentType("application/json");
-                    response.getWriter().write("{\"error\": \"Unauthorized\"}");
-                } else {
-                    response.sendRedirect("/oauth2/authorization/google");
-                }
-            })
-        .and()
-        .oauth2Login()
-            .authorizationEndpoint()
-                .authorizationRequestResolver(customAuthorizationRequestResolver(null)) // inject repo if needed
-                .and()
+        )
+        .oauth2Login(o -> o
             .successHandler(successHandler)
-        .and()
-        .logout()
+            .authorizationEndpoint()
+                .authorizationRequestResolver(customAuthorizationRequestResolver(null))
+        )
+        .logout(logout -> logout
             .logoutUrl("/logout")
             .logoutSuccessHandler((request, response, authentication) -> {
                 ResponseCookie cookie = ResponseCookie.from("token", "")
                     .httpOnly(true)
                     .secure(true)
                     .sameSite("None")
+                    .domain("chessbackend-production.up.railway.app")
                     .path("/")
                     .maxAge(0)
                     .build();
                 response.setHeader(HttpHeaders.SET_COOKIE, cookie.toString());
                 response.setStatus(HttpServletResponse.SC_OK);
-            });
+            })
+        );
 
     http.addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class);
-
     return http.build();
 }
 

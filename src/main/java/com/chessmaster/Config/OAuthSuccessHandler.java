@@ -3,6 +3,7 @@ package com.chessmaster.Config;
 import java.io.IOException;
 import java.time.Duration;
 
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseCookie;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.oauth2.core.user.OAuth2User;
@@ -40,16 +41,15 @@ public class OAuthSuccessHandler implements AuthenticationSuccessHandler {
         // interchanged
         ResponseCookie cookie = ResponseCookie.from("token", token)
             .httpOnly(true)
-            .path("/")
             .secure(true)
-            .sameSite("None") // This actually works and is portable
+            .sameSite("None")
+            .domain("chessbackend-production.up.railway.app") // Add this
+            .path("/")
             .maxAge(Duration.ofDays(1))
             .build();
         
-        response.setHeader("Set-Cookie", cookie.toString());
-
-
-        response.sendRedirect("https://chessbackend-production.up.railway.app/postlogin?token=" + token);
+        response.setHeader(HttpHeaders.SET_COOKIE, cookie.toString());
+        response.sendRedirect("https://chess-frontend-ashy.vercel.app");
 
     }
 }
