@@ -113,7 +113,7 @@ public class SecurityConfig {
         .logoutUrl("/logout")
         .logoutSuccessHandler((request, response, authentication) -> {
             ResponseCookie cookie = ResponseCookie.from("token", "")
-                .httpOnly(true)
+                // .httpOnly(true)
                 .path("/")
                 .maxAge(0)
                 .build();
