@@ -55,18 +55,18 @@ public class SecurityConfig {
 
 
 
-    // @Bean
-    // public OAuth2AuthorizationRequestResolver customAuthorizationRequestResolver(ClientRegistrationRepository repo) {
-    //     DefaultOAuth2AuthorizationRequestResolver resolver =
-    //         new DefaultOAuth2AuthorizationRequestResolver(repo, "/oauth2/authorization");
+    @Bean
+    public OAuth2AuthorizationRequestResolver customAuthorizationRequestResolver(ClientRegistrationRepository repo) {
+        DefaultOAuth2AuthorizationRequestResolver resolver =
+            new DefaultOAuth2AuthorizationRequestResolver(repo, "/oauth2/authorization");
 
-    //     resolver.setAuthorizationRequestCustomizer(builder ->
-    //         builder.additionalParameters(params -> {
-    //             params.put("prompt", "consent"); // or "select_account"
-    //         })
-    //     );
-    //     return resolver;
-    // }
+        resolver.setAuthorizationRequestCustomizer(builder ->
+            builder.additionalParameters(params -> {
+                params.put("prompt", "consent"); // or "select_account"
+            })
+        );
+        return resolver;
+    }
 
     // @Bean
     // public CorsConfigurationSource corsConfigurationSource() {
@@ -145,42 +145,70 @@ public class SecurityConfig {
     //     });
     // }
 
-    @Bean
+    // @Bean
+    // public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
+    //     http
+    //         .securityContext(context -> context
+    //             .securityContextRepository(new NullSecurityContextRepository())
+    //         )
+    //         .sessionManagement(session -> session
+    //             .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
+    //         )
+    //         .cors(Customizer.withDefaults())
+    //         .csrf().disable()
+    //         .authorizeHttpRequests()
+    //             .requestMatchers("/login/**", "/oauth2/**", "/logout").permitAll()
+    //             .anyRequest().authenticated()
+    //         .and()
+    //         .oauth2Login(oauth -> oauth
+    //             .successHandler(successHandler)
+    //         )
+    //         .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class)
+    //         .logout(logout -> logout
+    //             .logoutUrl("/logout")
+    //             .logoutSuccessHandler((request, response, authentication) -> {
+    //                 ResponseCookie clearCookie = ResponseCookie.from("token", "")
+    //                         .httpOnly(true)
+    //                         .secure(true)
+    //                         .sameSite("None")
+    //                         .path("/")
+    //                         .maxAge(0)
+    //                         .build();
+
+    //                 response.setHeader(HttpHeaders.SET_COOKIE, clearCookie.toString());
+    //                 response.setStatus(HttpServletResponse.SC_OK);
+    //             })
+    //         );
+
+    //     return http.build();
+    // }
+
+     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
-            .securityContext(context -> context
-                .securityContextRepository(new NullSecurityContextRepository())
-            )
-            .sessionManagement(session -> session
-                .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
-            )
-            .cors(Customizer.withDefaults())
-            .csrf().disable()
-            .authorizeHttpRequests()
-                .requestMatchers("/login/**", "/oauth2/**", "/logout").permitAll()
-                .anyRequest().authenticated()
-            .and()
-            .oauth2Login(oauth -> oauth
-                .successHandler(successHandler)
-            )
-            .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class)
-            .logout(logout -> logout
-                .logoutUrl("/logout")
-                .logoutSuccessHandler((request, response, authentication) -> {
-                    ResponseCookie clearCookie = ResponseCookie.from("token", "")
-                            .httpOnly(true)
-                            .secure(true)
-                            .sameSite("None")
-                            .path("/")
-                            .maxAge(0)
-                            .build();
-
-                    response.setHeader(HttpHeaders.SET_COOKIE, clearCookie.toString());
-                    response.setStatus(HttpServletResponse.SC_OK);
-                })
-            );
-
-        return http.build();
+        .cors(Customizer.withDefaults()) // Enable CORS
+        .csrf().disable() // (optional) if you're not using CSRF protection
+        .authorizeHttpRequests()
+            .requestMatchers("/logout", "/login/**", "/oauth2/**").permitAll()
+            .anyRequest().authenticated()
+        .and()
+        .oauth2Login()
+        .defaultSuccessUrl("http://localhost:3000/Start", true)
+        .and()
+        .logout()
+            .logoutUrl("/logout")
+            .logoutSuccessHandler((request, response, authentication) -> {
+                ResponseCookie cookie = ResponseCookie.from("token", "")
+                    .httpOnly(true)
+                    .secure(true)
+                    .sameSite("None")
+                    .path("/")
+                    .maxAge(0)
+                    .build();
+                response.setHeader(HttpHeaders.SET_COOKIE, cookie.toString());
+                response.setStatus(HttpServletResponse.SC_OK);
+            });
+            return http.build();
     }
 
 
@@ -202,19 +230,19 @@ public class SecurityConfig {
 
 
 
-    @Bean
-    public CorsConfigurationSource corsConfigurationSource() {
-        CorsConfiguration config = new CorsConfiguration();
-        config.setAllowedOrigins(List.of("https://vite-frontend-gamma.vercel.app"));
-        config.setAllowedMethods(List.of("GET", "POST", "OPTIONS"));
-        config.setAllowedHeaders(List.of("*"));
-        config.setAllowCredentials(true);
-        config.setExposedHeaders(List.of("Set-Cookie"));
+    // @Bean
+    // public CorsConfigurationSource corsConfigurationSource() {
+    //     CorsConfiguration config = new CorsConfiguration();
+    //     config.setAllowedOrigins(List.of("https://vite-frontend-gamma.vercel.app"));
+    //     config.setAllowedMethods(List.of("GET", "POST", "OPTIONS"));
+    //     config.setAllowedHeaders(List.of("*"));
+    //     config.setAllowCredentials(true);
+    //     config.setExposedHeaders(List.of("Set-Cookie"));
 
-        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
-        source.registerCorsConfiguration("/**", config);
-        return source;
-    }
+    //     UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
+    //     source.registerCorsConfiguration("/**", config);
+    //     return source;
+    // }
 
 
 
