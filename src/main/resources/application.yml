@@ -21,3 +21,11 @@ spring:
 #     secret: my-super-secret-key-that-is-very-long
 #     expiration: 3600000 # 1 hour
 
+server:
+  servlet:
+    session:
+      cookie:
+        secure: true
+        http-only: true
+        same-site: none
+
