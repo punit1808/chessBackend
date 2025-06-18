@@ -15,7 +15,7 @@ import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.Customizer;
 
-import com.chessmaster.jwt.JwtAuthFilter;
+// import com.chessmaster.jwt.JwtAuthFilter;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseCookie;
 import jakarta.servlet.http.HttpServletResponse;
@@ -30,13 +30,13 @@ import java.util.List;
 @EnableWebSecurity
 public class SecurityConfig {
 
-    private final JwtAuthFilter jwtAuthFilter;
-    private final OAuthSuccessHandler successHandler;
+    // private final JwtAuthFilter jwtAuthFilter;
+    // private final OAuthSuccessHandler successHandler;
 
-    public SecurityConfig(JwtAuthFilter jwtAuthFilter, OAuthSuccessHandler successHandler) {
-        this.jwtAuthFilter = jwtAuthFilter;
-        this.successHandler = successHandler;
-    }
+    // public SecurityConfig(JwtAuthFilter jwtAuthFilter, OAuthSuccessHandler successHandler) {
+    //     this.jwtAuthFilter = jwtAuthFilter;
+    //     this.successHandler = successHandler;
+    // }
 
 
 
