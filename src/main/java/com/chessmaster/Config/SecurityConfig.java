@@ -53,18 +53,18 @@ public class SecurityConfig {
 
 
 
-    @Bean
-    public OAuth2AuthorizationRequestResolver customAuthorizationRequestResolver(ClientRegistrationRepository repo) {
-        DefaultOAuth2AuthorizationRequestResolver resolver =
-            new DefaultOAuth2AuthorizationRequestResolver(repo, "/oauth2/authorization");
+    // @Bean
+    // public OAuth2AuthorizationRequestResolver customAuthorizationRequestResolver(ClientRegistrationRepository repo) {
+    //     DefaultOAuth2AuthorizationRequestResolver resolver =
+    //         new DefaultOAuth2AuthorizationRequestResolver(repo, "/oauth2/authorization");
 
-        resolver.setAuthorizationRequestCustomizer(builder ->
-            builder.additionalParameters(params -> {
-                params.put("prompt", "consent"); // or "select_account"
-            })
-        );
-        return resolver;
-    }
+    //     resolver.setAuthorizationRequestCustomizer(builder ->
+    //         builder.additionalParameters(params -> {
+    //             params.put("prompt", "consent"); // or "select_account"
+    //         })
+    //     );
+    //     return resolver;
+    // }
 
     // @Bean
     // public CorsConfigurationSource corsConfigurationSource() {
@@ -124,24 +124,24 @@ public class SecurityConfig {
     //     };
     // }
 
-    @Bean
-    public ServletWebServerFactory servletContainer() {
-        TomcatServletWebServerFactory factory = new TomcatServletWebServerFactory();
-        factory.addContextCustomizers(context -> {
-            context.setUseHttpOnly(true);
-        });
-        return factory;
-    }
+    // @Bean
+    // public ServletWebServerFactory servletContainer() {
+    //     TomcatServletWebServerFactory factory = new TomcatServletWebServerFactory();
+    //     factory.addContextCustomizers(context -> {
+    //         context.setUseHttpOnly(true);
+    //     });
+    //     return factory;
+    // }
 
 
-     @Bean
-    public WebServerFactoryCustomizer<TomcatServletWebServerFactory> customizer() {
-        return factory -> factory.addContextCustomizers(context -> {
-            Rfc6265CookieProcessor cookieProcessor = new Rfc6265CookieProcessor();
-            cookieProcessor.setSameSiteCookies("None"); // 🟢 Critical
-            context.setCookieProcessor(cookieProcessor);
-        });
-    }
+    //  @Bean
+    // public WebServerFactoryCustomizer<TomcatServletWebServerFactory> customizer() {
+    //     return factory -> factory.addContextCustomizers(context -> {
+    //         Rfc6265CookieProcessor cookieProcessor = new Rfc6265CookieProcessor();
+    //         cookieProcessor.setSameSiteCookies("None"); // 🟢 Critical
+    //         context.setCookieProcessor(cookieProcessor);
+    //     });
+    // }
 
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
