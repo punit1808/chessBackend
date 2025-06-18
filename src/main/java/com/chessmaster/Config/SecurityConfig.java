@@ -151,7 +151,7 @@ public class SecurityConfig {
                 .anyRequest().authenticated()
             .and()
             .oauth2Login()
-                .defaultSuccessUrl("https://chess-frontend-ashy.vercel.app/Start", true)
+                .defaultSuccessUrl("https://vite-frontend-gamma.vercel.app", true)
             .and()
             .logout()
                 .logoutUrl("/logout")
@@ -178,7 +178,7 @@ public class SecurityConfig {
             @Override
             public void addCorsMappings(CorsRegistry registry) {
                 registry.addMapping("/**")
-                    .allowedOrigins("https://chess-frontend-ashy.vercel.app")
+                    .allowedOrigins("https://vite-frontend-gamma.vercel.app")
                     .allowedMethods("GET", "POST", "PUT", "DELETE", "OPTIONS")
                     .allowCredentials(true) // ✅ Required to send cookies
                     .allowedHeaders("*")
@@ -192,7 +192,7 @@ public class SecurityConfig {
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration config = new CorsConfiguration();
-        config.setAllowedOrigins(List.of("https://chess-frontend-ashy.vercel.app"));
+        config.setAllowedOrigins(List.of("https://vite-frontend-gamma.vercel.app"));
         config.setAllowedMethods(List.of("GET", "POST", "OPTIONS"));
         config.setAllowedHeaders(List.of("*"));
         config.setAllowCredentials(true);
