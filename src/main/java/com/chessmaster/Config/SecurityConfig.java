@@ -3,9 +3,11 @@ package com.chessmaster.Config;
 import org.apache.tomcat.util.http.Rfc6265CookieProcessor;
 import org.springframework.boot.web.embedded.tomcat.TomcatServletWebServerFactory;
 import org.springframework.boot.web.server.WebServerFactoryCustomizer;
+import org.springframework.boot.web.servlet.FilterRegistrationBean;
 import org.springframework.boot.web.servlet.server.ServletWebServerFactory;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.core.Ordered;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.oauth2.client.registration.ClientRegistrationRepository;
@@ -183,22 +185,38 @@ public class SecurityConfig {
     //     return http.build();
     // }
 
+    @Bean
+public FilterRegistrationBean<SessionDisablingFilter> sessionDisablingFilter() {
+    FilterRegistrationBean<SessionDisablingFilter> registration = new FilterRegistrationBean<>();
+    registration.setFilter(new SessionDisablingFilter());
+    registration.setOrder(Ordered.HIGHEST_PRECEDENCE);
+    return registration;
+}
+
      @Bean
-    public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
-        http
-        .sessionManagement()
-                .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
-        .and()
+public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
+    http
+        // Disable session completely
+        .sessionManagement(session -> session
+            .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
+            .sessionFixation().none()
+        )
+        // Disable unnecessary session features
+        .requestCache(cache -> cache.disable())
+        .securityContext(context -> context.disable())
+        .servletApi(api -> api.disable())
+        
+        // Your existing configuration
         .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class)
-        .cors().disable() // disable CORS
-        .csrf().disable() // (optional) if you're not using CSRF protection
+        .cors().and() // Enable CORS properly
+        .csrf().disable()
         .authorizeHttpRequests()
             .requestMatchers("/logout", "/login/**", "/oauth2/**").permitAll()
             .anyRequest().authenticated()
         .and()
         .oauth2Login(oauth -> oauth
-                .successHandler(successHandler)
-            )
+            .successHandler(successHandler)
+        )
         .logout()
             .logoutUrl("/logout")
             .logoutSuccessHandler((request, response, authentication) -> {
@@ -212,9 +230,25 @@ public class SecurityConfig {
                 response.setHeader(HttpHeaders.SET_COOKIE, cookie.toString());
                 response.setStatus(HttpServletResponse.SC_OK);
             });
-            return http.build();
-    }
+    
+    return http.build();
+}
 
+
+@Bean
+public CorsConfigurationSource corsConfigurationSource() {
+    CorsConfiguration config = new CorsConfiguration();
+    config.setAllowedOrigins(List.of("https://vite-frontend-gamma.vercel.app"));
+    config.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
+    config.setAllowedHeaders(List.of("*"));
+    config.setAllowCredentials(true);
+    config.setExposedHeaders(List.of("Set-Cookie"));
+    config.setMaxAge(3600L);
+
+    UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
+    source.registerCorsConfiguration("/**", config);
+    return source;
+}
 
 
     @Bean
