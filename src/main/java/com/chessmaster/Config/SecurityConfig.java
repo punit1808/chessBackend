@@ -27,6 +27,7 @@ import org.springframework.security.web.context.NullSecurityContextRepository;
 
 import com.chessmaster.jwt.JwtAuthFilter;
 import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpMethod;
 import org.springframework.http.ResponseCookie;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpServletRequest;
@@ -186,38 +187,34 @@ public class SecurityConfig {
     // }
 
     @Bean
-public FilterRegistrationBean<SessionDisablingFilter> sessionDisablingFilter() {
-    FilterRegistrationBean<SessionDisablingFilter> registration = new FilterRegistrationBean<>();
-    registration.setFilter(new SessionDisablingFilter());
-    registration.setOrder(Ordered.HIGHEST_PRECEDENCE);
-    return registration;
-}
-
-     @Bean
 public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
     http
-        // Disable session completely
+        // Disable sessions completely
         .sessionManagement(session -> session
             .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
-            .sessionFixation().none()
         )
-        // Disable unnecessary session features
-        .requestCache(cache -> cache.disable())
-        .securityContext(context -> context.disable())
-        .servletApi(api -> api.disable())
-        
-        // Your existing configuration
+        // Add JWT filter
         .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class)
-        .cors().and() // Enable CORS properly
+        // Enable proper CORS
+        .cors(cors -> cors.configurationSource(corsConfigurationSource()))
+        // Disable CSRF for JWT
         .csrf().disable()
-        .authorizeHttpRequests()
-            .requestMatchers("/logout", "/login/**", "/oauth2/**").permitAll()
+        // Configure authorization
+        .authorizeHttpRequests(auth -> auth
+            .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll() // Allow preflight
+            .requestMatchers("/api/auth/**", "/oauth2/**", "/login/**").permitAll()
+            .requestMatchers("/api/hello").authenticated() // Requires JWT
             .anyRequest().authenticated()
-        .and()
+        )
+        // Configure OAuth2
         .oauth2Login(oauth -> oauth
             .successHandler(successHandler)
+            .failureHandler((request, response, exception) -> {
+                response.sendError(HttpServletResponse.SC_UNAUTHORIZED);
+            })
         )
-        .logout()
+        // Configure logout
+        .logout(logout -> logout
             .logoutUrl("/logout")
             .logoutSuccessHandler((request, response, authentication) -> {
                 ResponseCookie cookie = ResponseCookie.from("token", "")
@@ -229,8 +226,9 @@ public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
                     .build();
                 response.setHeader(HttpHeaders.SET_COOKIE, cookie.toString());
                 response.setStatus(HttpServletResponse.SC_OK);
-            });
-    
+            })
+        );
+
     return http.build();
 }
 
