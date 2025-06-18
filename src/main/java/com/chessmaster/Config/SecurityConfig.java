@@ -161,6 +161,22 @@ public class SecurityConfig {
         return http.build();
     }
 
+    @Bean
+    public WebMvcConfigurer corsConfigurer() {
+        return new WebMvcConfigurer() {
+            @Override
+            public void addCorsMappings(CorsRegistry registry) {
+                registry.addMapping("/**")
+                    .allowedOrigins("https://chess-frontend-ashy.vercel.app")
+                    .allowedMethods("GET", "POST", "PUT", "DELETE", "OPTIONS")
+                    .allowCredentials(true) // ✅ Required to send cookies
+                    .allowedHeaders("*")
+                    .exposedHeaders("Set-Cookie"); // optional
+            }
+        };
+    }
+
+
 
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
