@@ -3,6 +3,7 @@ package com.chessmaster.Config;
 import org.apache.tomcat.util.http.Rfc6265CookieProcessor;
 import org.springframework.boot.web.embedded.tomcat.TomcatServletWebServerFactory;
 import org.springframework.boot.web.server.WebServerFactoryCustomizer;
+import org.springframework.boot.web.servlet.server.ServletWebServerFactory;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
@@ -120,6 +121,16 @@ public class SecurityConfig {
     //         }
     //     };
     // }
+
+    @Bean
+    public ServletWebServerFactory servletContainer() {
+        TomcatServletWebServerFactory factory = new TomcatServletWebServerFactory();
+        factory.addContextCustomizers(context -> {
+            context.setUseHttpOnly(true);
+        });
+        return factory;
+    }
+
 
      @Bean
     public WebServerFactoryCustomizer<TomcatServletWebServerFactory> customizer() {
