@@ -186,15 +186,19 @@ public class SecurityConfig {
      @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
+        .sessionManagement(session -> session
+                .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
+            )
         .cors(Customizer.withDefaults()) // Enable CORS
         .csrf().disable() // (optional) if you're not using CSRF protection
         .authorizeHttpRequests()
             .requestMatchers("/logout", "/login/**", "/oauth2/**").permitAll()
             .anyRequest().authenticated()
         .and()
-        .oauth2Login()
-        .defaultSuccessUrl("https://vite-frontend-gamma.vercel.app", true)
-        .and()
+        .oauth2Login(oauth -> oauth
+                .successHandler(successHandler)
+            )
+            .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class)
         .logout()
             .logoutUrl("/logout")
             .logoutSuccessHandler((request, response, authentication) -> {
