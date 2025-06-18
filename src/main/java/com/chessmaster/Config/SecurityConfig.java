@@ -132,7 +132,10 @@ public class SecurityConfig {
                     cookie.setPath("/");
                     cookie.setSecure(true);
                     cookie.setHttpOnly(true);
-                    response.addCookie(cookie);
+                    // Manually set SameSite=None by adding the Set-Cookie header
+                    StringBuilder setCookieHeader = new StringBuilder();
+                    setCookieHeader.append("JSESSIONID=; Max-Age=0; Path=/; Secure; HttpOnly; SameSite=None");
+                    response.setHeader("Set-Cookie", setCookieHeader.toString());
                     response.setStatus(HttpServletResponse.SC_OK);
                 });
 
