@@ -25,17 +25,17 @@ public class TokenController {
         if (cookies == null) {
             return ResponseEntity.status(401).body(Map.of("error", "No cookies present"));
         }
-    
+
         String jwt = Arrays.stream(cookies)
-                .filter(cookie -> "token".equals(cookie.getName())) // FIXED: "token"
+                .filter(cookie -> "token".equals(cookie.getName()))
                 .findFirst()
                 .map(Cookie::getValue)
                 .orElse(null);
-    
+
         if (jwt == null) {
             return ResponseEntity.status(401).body(Map.of("error", "JWT token not found in cookies"));
         }
-    
+
         return ResponseEntity.ok(Map.of("token", jwt));
     }
 
