@@ -18,8 +18,10 @@ import org.springframework.web.servlet.config.annotation.CorsRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.security.web.context.NullSecurityContextRepository;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.Customizer;
+import org.springframework.security.web.context.NullSecurityContextRepository;
 
 import com.chessmaster.jwt.JwtAuthFilter;
 import org.springframework.http.HttpHeaders;
@@ -146,23 +148,25 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
+            .securityContext(context -> context
+                .securityContextRepository(new NullSecurityContextRepository())
+            )
+            .sessionManagement(session -> session
+                .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
+            )
             .cors(Customizer.withDefaults())
             .csrf().disable()
-            .sessionManagement(session -> session
-                .sessionCreationPolicy(SessionCreationPolicy.IF_REQUIRED)
-            )
             .authorizeHttpRequests()
                 .requestMatchers("/login/**", "/oauth2/**", "/logout").permitAll()
                 .anyRequest().authenticated()
             .and()
             .oauth2Login(oauth -> oauth
-                .successHandler(successHandler) // sets JWT in cookie
+                .successHandler(successHandler)
             )
             .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class)
             .logout(logout -> logout
                 .logoutUrl("/logout")
                 .logoutSuccessHandler((request, response, authentication) -> {
-                    // Invalidate the JWT cookie (same name as used in successHandler)
                     ResponseCookie clearCookie = ResponseCookie.from("token", "")
                             .httpOnly(true)
                             .secure(true)
@@ -178,6 +182,7 @@ public class SecurityConfig {
 
         return http.build();
     }
+
 
 
     @Bean

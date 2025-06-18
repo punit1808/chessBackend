@@ -21,27 +21,6 @@ import jakarta.servlet.http.HttpServletResponse;
 @RestController
 public class TokenController {
 
-    // @GetMapping("/token")
-    // public ResponseEntity<?> getTokenFromCookie(HttpServletRequest request) {
-    //     Cookie[] cookies = request.getCookies();
-        
-    //     if (cookies == null) {
-    //         return ResponseEntity.status(401).body(Map.of("error", "No cookies present"));
-    //     }
-
-    //     String jwt = Arrays.stream(cookies)
-    //             .filter(cookie -> "token".equals(cookie.getName()))
-    //             .findFirst()
-    //             .map(Cookie::getValue)
-    //             .orElse(null);
-
-    //     if (jwt == null) {
-    //         return ResponseEntity.status(401).body(Map.of("error", "JWT token not found in cookies"));
-    //     }
-
-    //     return ResponseEntity.ok(Map.of("token", jwt));
-    // }
-
     @GetMapping("/token")
     public ResponseEntity<Map<String, String>> getTokenInfo(Authentication authentication) {
         if (authentication == null || !authentication.isAuthenticated()) {
