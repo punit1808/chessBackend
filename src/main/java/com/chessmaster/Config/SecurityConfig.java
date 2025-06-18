@@ -193,7 +193,7 @@ public class SecurityConfig {
             .anyRequest().authenticated()
         .and()
         .oauth2Login()
-        .defaultSuccessUrl("http://localhost:3000/Start", true)
+        .defaultSuccessUrl("https://vite-frontend-gamma.vercel.app", true)
         .and()
         .logout()
             .logoutUrl("/logout")
