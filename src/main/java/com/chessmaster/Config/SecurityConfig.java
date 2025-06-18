@@ -16,10 +16,11 @@ import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 import org.springframework.web.servlet.config.annotation.CorsRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.Customizer;
 
-// import com.chessmaster.jwt.JwtAuthFilter;
+import com.chessmaster.jwt.JwtAuthFilter;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseCookie;
 import jakarta.servlet.http.HttpServletResponse;
@@ -41,13 +42,13 @@ import java.util.List;
 @EnableWebSecurity
 public class SecurityConfig {
 
-    // private final JwtAuthFilter jwtAuthFilter;
-    // private final OAuthSuccessHandler successHandler;
+    private final JwtAuthFilter jwtAuthFilter;
+    private final OAuthSuccessHandler successHandler;
 
-    // public SecurityConfig(JwtAuthFilter jwtAuthFilter, OAuthSuccessHandler successHandler) {
-    //     this.jwtAuthFilter = jwtAuthFilter;
-    //     this.successHandler = successHandler;
-    // }
+    public SecurityConfig(JwtAuthFilter jwtAuthFilter, OAuthSuccessHandler successHandler) {
+        this.jwtAuthFilter = jwtAuthFilter;
+        this.successHandler = successHandler;
+    }
 
 
 
@@ -147,30 +148,33 @@ public class SecurityConfig {
             .cors(Customizer.withDefaults())
             .csrf().disable()
             .authorizeHttpRequests()
-                .requestMatchers("/login/**", "/oauth2/**", "/token", "/logout").permitAll()
+                .requestMatchers("/login/**", "/oauth2/**", "/logout").permitAll()
                 .anyRequest().authenticated()
             .and()
-            .oauth2Login()
-                .defaultSuccessUrl("https://vite-frontend-gamma.vercel.app", true)
-            .and()
-            .logout()
+            .oauth2Login(oauth -> oauth
+                .successHandler(successHandler) // sets JWT in cookie
+            )
+            .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class)
+            .logout(logout -> logout
                 .logoutUrl("/logout")
                 .logoutSuccessHandler((request, response, authentication) -> {
-                    // Optional: expire JSESSIONID
-                    jakarta.servlet.http.Cookie cookie = new jakarta.servlet.http.Cookie("JSESSIONID", null);
-                    cookie.setMaxAge(0);
-                    cookie.setPath("/");
-                    cookie.setSecure(true);
-                    cookie.setHttpOnly(true);
-                    // Manually set SameSite=None by adding the Set-Cookie header
-                    StringBuilder setCookieHeader = new StringBuilder();
-                    setCookieHeader.append("JSESSIONID=; Max-Age=0; Path=/; Secure; HttpOnly; SameSite=None");
-                    response.setHeader("Set-Cookie", setCookieHeader.toString());
+                    // Invalidate the JWT cookie (same name as used in successHandler)
+                    ResponseCookie clearCookie = ResponseCookie.from("token", "")
+                            .httpOnly(true)
+                            .secure(true)
+                            .sameSite("None")
+                            .path("/")
+                            .maxAge(0)
+                            .build();
+
+                    response.setHeader(HttpHeaders.SET_COOKIE, clearCookie.toString());
                     response.setStatus(HttpServletResponse.SC_OK);
-                });
+                })
+            );
 
         return http.build();
     }
+
 
     @Bean
     public WebMvcConfigurer corsConfigurer() {

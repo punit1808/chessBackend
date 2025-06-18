@@ -8,6 +8,7 @@ import org.springframework.http.ResponseCookie;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.oauth2.client.authentication.OAuth2AuthenticationToken;
 import org.springframework.security.oauth2.core.user.OAuth2User;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -42,16 +43,17 @@ public class TokenController {
     // }
 
     @GetMapping("/token")
-    public ResponseEntity<Map<String, String>> getTokenInfo(OAuth2AuthenticationToken authentication) {
-        if (authentication == null) {
-            return ResponseEntity.status(HttpServletResponse.SC_UNAUTHORIZED).body(Map.of("error", "Not authenticated"));
+    public ResponseEntity<Map<String, String>> getTokenInfo(Authentication authentication) {
+        if (authentication == null || !authentication.isAuthenticated()) {
+            return ResponseEntity.status(HttpServletResponse.SC_UNAUTHORIZED)
+                                .body(Map.of("error", "Not authenticated"));
         }
 
-        OAuth2User user = authentication.getPrincipal();
-        String email = user.getAttribute("email");
+        String email = authentication.getName(); // or extract custom claims if needed
 
         return ResponseEntity.ok(Map.of("email", email));
     }
+
 
 
 
