@@ -6,6 +6,8 @@ import java.util.Map;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseCookie;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.oauth2.client.authentication.OAuth2AuthenticationToken;
+import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -18,41 +20,37 @@ import jakarta.servlet.http.HttpServletResponse;
 @RestController
 public class TokenController {
 
-    @GetMapping("/token")
-    public ResponseEntity<?> getTokenFromCookie(HttpServletRequest request) {
-        Cookie[] cookies = request.getCookies();
+    // @GetMapping("/token")
+    // public ResponseEntity<?> getTokenFromCookie(HttpServletRequest request) {
+    //     Cookie[] cookies = request.getCookies();
         
-        if (cookies == null) {
-            return ResponseEntity.status(401).body(Map.of("error", "No cookies present"));
+    //     if (cookies == null) {
+    //         return ResponseEntity.status(401).body(Map.of("error", "No cookies present"));
+    //     }
+
+    //     String jwt = Arrays.stream(cookies)
+    //             .filter(cookie -> "token".equals(cookie.getName()))
+    //             .findFirst()
+    //             .map(Cookie::getValue)
+    //             .orElse(null);
+
+    //     if (jwt == null) {
+    //         return ResponseEntity.status(401).body(Map.of("error", "JWT token not found in cookies"));
+    //     }
+
+    //     return ResponseEntity.ok(Map.of("token", jwt));
+    // }
+
+    @GetMapping("/token")
+    public ResponseEntity<Map<String, String>> getTokenInfo(OAuth2AuthenticationToken authentication) {
+        if (authentication == null) {
+            return ResponseEntity.status(HttpServletResponse.SC_UNAUTHORIZED).body(Map.of("error", "Not authenticated"));
         }
 
-        String jwt = Arrays.stream(cookies)
-                .filter(cookie -> "token".equals(cookie.getName()))
-                .findFirst()
-                .map(Cookie::getValue)
-                .orElse(null);
+        OAuth2User user = authentication.getPrincipal();
+        String email = user.getAttribute("email");
 
-        if (jwt == null) {
-            return ResponseEntity.status(401).body(Map.of("error", "JWT token not found in cookies"));
-        }
-
-        return ResponseEntity.ok(Map.of("token", jwt));
-    }
-
-    @GetMapping("/postlogin")
-    public ResponseEntity<String> postLogin(@RequestParam String token) {
-        String html = """
-        <html>
-        <head>
-            <script>
-            document.cookie = "token=%s; path=/; secure; samesite=None";
-            window.location.href = "https://chess-frontend-ashy.vercel.app";
-            </script>
-        </head>
-        <body></body>
-        </html>
-        """.formatted(token);
-        return ResponseEntity.ok().header(HttpHeaders.CONTENT_TYPE, "text/html").body(html);
+        return ResponseEntity.ok(Map.of("email", email));
     }
 
 

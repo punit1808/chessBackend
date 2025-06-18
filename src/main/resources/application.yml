@@ -16,8 +16,8 @@ spring:
             user-info-uri: https://openidconnect.googleapis.com/v1/userinfo
             user-name-attribute: sub
 
-app:
-  jwt:
-    secret: my-super-secret-key-that-is-very-long
-    expiration: 3600000 # 1 hour
+# app:
+#   jwt:
+#     secret: my-super-secret-key-that-is-very-long
+#     expiration: 3600000 # 1 hour
 
