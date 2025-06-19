@@ -52,7 +52,6 @@ public class SecurityConfig {
             .cors(cors -> cors.configurationSource(corsConfigurationSource()))
             .authorizeHttpRequests(auth -> auth.anyRequest().authenticated())
             .oauth2Login(oauth2 -> {
-                oauth2.loginPage("/login").permitAll();
                 oauth2.successHandler(successHandler);
             });
 
