@@ -29,16 +29,6 @@ public class ApiController {
 
     @Autowired
     private ChessService chessService;
-
-    @GetMapping("/api/hello")
-    public String securedHello() {
-        return "🎉 Hello, this is protected data only for authenticated users! and updated..";
-    }
-
-    @GetMapping("/api/test")
-    public String test(){
-        return "Second endpoint";
-    }
     
     @GetMapping("/api/game/create")
     public ResponseEntity<?> createGame() {
