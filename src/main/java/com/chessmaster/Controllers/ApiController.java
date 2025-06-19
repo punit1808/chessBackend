@@ -20,8 +20,16 @@ import com.chessmaster.Models.MoveResponse;
 import com.chessmaster.Models.SocketResponse;
 import com.chessmaster.Service.GameSessionService;
 import com.chessmaster.Service.ChessService;
+import org.springframework.web.bind.annotation.CrossOrigin;
+
 
 @RestController
+@CrossOrigin(
+    origins = {
+        "https://chess-frontend-git-main-punit1808s-projects.vercel.app",
+        "https://chess-frontend-punit1808s-projects.vercel.app",
+        "https://chess-frontend-ashy.vercel.app"})
+
 public class ApiController {
     
     @Autowired
