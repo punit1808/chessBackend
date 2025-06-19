@@ -26,8 +26,11 @@ import java.util.List;
 @EnableWebSecurity
 public class SecurityConfig {
 
-    @Autowired
     private final OAuthSuccessHandler successHandler;
+
+    public SecurityConfig(OAuthSuccessHandler successHandler) {
+        this.successHandler = successHandler;
+    }
 
     @Bean
     public OAuth2AuthorizationRequestResolver customAuthorizationRequestResolver(ClientRegistrationRepository repo) {
