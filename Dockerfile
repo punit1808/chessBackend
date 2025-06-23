@@ -6,5 +6,5 @@ RUN mvn clean package -DskipTests
 # Stage 2: Create a slim runtime image
 FROM eclipse-temurin:17-jdk-alpine
 COPY --from=build target/chessmaster-0.0.1-SNAPSHOT.jar chessmaster-0.0.1-SNAPSHOT.jar
-EXPOSE 10000
+EXPOSE 8080
 ENTRYPOINT ["java", "-jar", "chessmaster-0.0.1-SNAPSHOT.jar"]
