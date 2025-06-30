@@ -15,9 +15,9 @@ public class SecurityConfig {
             public void addCorsMappings(CorsRegistry registry) {
                 registry.addMapping("/**")
                         .allowedOrigins(
-                            "https://chess-frontend-ashy.vercel.app",
-                            "https://chess-frontend-punit1808s-projects.vercel.app",
-                            "https://chess-frontend-git-main-punit1808s-projects.vercel.app"
+                            "https://chess-frontend-xi.vercel.app",
+                            "https://chess-frontend-git-main-punit1808s-projects.vercel.app",
+                            "https://chess-frontend-b86ac8bv9-punit1808s-projects.vercel.app"
                         )
                         .allowedMethods("GET", "POST", "PUT", "DELETE")
                         .allowCredentials(true)
