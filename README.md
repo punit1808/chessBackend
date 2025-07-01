@@ -1,2 +1,2 @@
 ChessMaster
-WEB LINK : https://chess-frontend-ashy.vercel.app/Start
+WEB LINK : https://chess-frontend-xi.vercel.app/register
