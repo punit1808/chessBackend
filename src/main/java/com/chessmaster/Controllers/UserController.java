@@ -21,15 +21,6 @@ public class UserController {
         this.userService = userService;
     }
 
-    @GetMapping("/me")
-    public ResponseEntity<Users> authenticatedUser() {
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-
-        Users currentUser = (Users) authentication.getPrincipal();
-
-        return ResponseEntity.ok(currentUser);
-    }
-
     @GetMapping
     public ResponseEntity<List<Users>> allUsers() {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();

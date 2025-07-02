@@ -9,6 +9,8 @@ public class LoginResponse {
 
     private long expiresIn;
 
+    private String fullName;
+
     public LoginResponse setToken(String token) {
         this.token = token;
         return this;
@@ -16,6 +18,11 @@ public class LoginResponse {
 
     public LoginResponse setExpiresIn(long expiresIn) {
         this.expiresIn = expiresIn;
+        return this;
+    }
+
+    public LoginResponse setFullName(String fullName) {
+        this.fullName = fullName;
         return this;
     }
 
