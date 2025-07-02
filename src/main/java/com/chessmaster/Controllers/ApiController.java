@@ -7,20 +7,19 @@ import java.util.UUID;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
-// import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RestController;
-
 import org.springframework.web.bind.annotation.PathVariable;
-
+import org.springframework.web.bind.annotation.RestController;
 
 import com.chessmaster.Models.Board;
 import com.chessmaster.Models.BoolResponse;
+import com.chessmaster.Models.GameData;
 import com.chessmaster.Models.MoveResponse;
 import com.chessmaster.Models.SocketResponse;
-import com.chessmaster.Service.GameSessionService;
+import com.chessmaster.Repo.GameEntityRepo;
 import com.chessmaster.Service.ChessService;
-import org.springframework.web.bind.annotation.CrossOrigin;
+import com.chessmaster.Service.GameSessionService;
 
 
 @RestController
@@ -37,6 +36,9 @@ public class ApiController {
 
     @Autowired
     private ChessService chessService;
+
+    @Autowired
+    private GameEntityRepo repo;
     
     @GetMapping("/api/game/create")
     public ResponseEntity<?> createGame() {
@@ -82,7 +84,7 @@ public class ApiController {
     @GetMapping("/api/game/rerender/{gameId}")
     public SocketResponse rerender(@PathVariable String gameId){
         Board board=this.gameSessionService.getBoard(gameId);
-        String turn=this.gameSessionService.getTurn(gameId);
+        String turn=turn(gameId);
         BoolResponse isSafe=this.chessService.isSafe(getCurrentState(gameId).getBoard());
         BoolResponse isWin=this.gameSessionService.checkWin(getCurrentState(gameId));
 
@@ -92,7 +94,16 @@ public class ApiController {
 
     @GetMapping("/api/game/turn/{gameId}")
     public String turn(@PathVariable String gameId){
-        return this.gameSessionService.getTurn(gameId);
+        GameData gd = repo.findByGameId(gameId)
+            .orElseThrow(() -> new RuntimeException("Game not found"));
+
+        String turn=this.gameSessionService.getTurn(gameId);
+        if(turn.equals("white")){
+            return gd.getPlayer1Id();
+        }
+        else{
+            return gd.getPlayer2Id();
+        }
     }
 
     @GetMapping("/api/game/isSafe/{gameId}")
