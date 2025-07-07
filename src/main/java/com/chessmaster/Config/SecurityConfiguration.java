@@ -41,12 +41,12 @@ public class SecurityConfiguration {
                 .authorizeHttpRequests((authorize) ->
                         authorize.requestMatchers(HttpMethod.POST, "/api/v1/auth/**").permitAll()
                                 .requestMatchers(HttpMethod.GET,"/api/v1/**").permitAll()
-                                .requestMatchers(HttpMethod.GET,"/api/v1/auth/live").permitAll()
                                 .requestMatchers(HttpMethod.POST,"/api/v1/**").permitAll()
                                 .requestMatchers(HttpMethod.PUT,"/api/v1/**").permitAll()
                                 .requestMatchers(HttpMethod.DELETE,"/api/v1/**").permitAll()
                                 .requestMatchers(HttpMethod.OPTIONS,"/api/v1/**").permitAll()
                                 .requestMatchers("/api/v1/auth/**").permitAll()
+                                .requestMatchers("/api/v1/auth/live").permitAll()
                                 .requestMatchers("/wss/**").permitAll()
                                 .anyRequest().authenticated()
 
