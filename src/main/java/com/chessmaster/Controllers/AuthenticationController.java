@@ -47,6 +47,11 @@ public class AuthenticationController {
         return ResponseEntity.ok(loginResponse);
     }
 
+    @GetMapping("/live")
+    public String hello(){
+        return "working";
+    }
+
     @PostMapping("/logout")
     public ResponseEntity<Void> logout(HttpServletRequest request, HttpServletResponse response) {
         Optional<Cookie> optionalCookie = getCookie(request, "jwt-token");
