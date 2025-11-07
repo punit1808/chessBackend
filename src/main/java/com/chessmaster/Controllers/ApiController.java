@@ -7,7 +7,6 @@ import java.util.UUID;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RestController;
@@ -23,12 +22,6 @@ import com.chessmaster.Service.GameSessionService;
 
 
 @RestController
-@CrossOrigin(
-    origins = {
-        "https://chess-frontend-git-main-punit1808s-projects.vercel.app",
-        "https://chess-frontend-punit1808s-projects.vercel.app",
-        "https://chess-frontend-ashy.vercel.app"})
-
 public class ApiController {
     
     @Autowired
@@ -39,13 +32,16 @@ public class ApiController {
 
     @Autowired
     private GameEntityRepo repo;
+
+    // vplayer endpoints
     
-    @GetMapping("/api/game/create")
-    public ResponseEntity<?> createGame() {
+    // create a vplayer gameId
+    @GetMapping("/api/game/create/{fTurn}")
+    public ResponseEntity<?> createGame(@PathVariable String fTurn) {
         String gameId = UUID.randomUUID().toString().substring(0, 6);
         Map<String, String> response = new HashMap<>();
         response.put("gameId", gameId);
-        Boolean ck=this.gameSessionService.addGame(gameId);
+        Boolean ck=this.gameSessionService.addGame(gameId,fTurn);
         if(ck){
             return ResponseEntity.ok(response);}
         
@@ -54,14 +50,9 @@ public class ApiController {
                     .body("Error occured.");
                     
     }
-
     
-    @GetMapping("/api/game/join/{gameId}")
-    public ResponseEntity<String> joinGame(@PathVariable String gameId) {
-        String UniqueId=UUID.randomUUID().toString().substring(0, 6);
-        return ResponseEntity.ok(UniqueId);
-    }
 
+    // make a move in vplayer
     @GetMapping("/api/game/move/{or}/{oc}/{nr}/{nc}/{gameId}/{uniqueId}")
     public MoveResponse makeMove( @PathVariable int or, @PathVariable int oc,@PathVariable int nr, @PathVariable int nc,@PathVariable String gameId,@PathVariable String uniqueId){  
         
@@ -76,11 +67,15 @@ public class ApiController {
         return mr;
     }
 
+    
+    // fetch board state vplayer
     @GetMapping("/api/game/board/{gameId}")
     public Board getCurrentState(@PathVariable String gameId) {
         return this.gameSessionService.getBoard(gameId);
     }
 
+
+    // fetch current state after vplayer move
     @GetMapping("/api/game/rerender/{gameId}")
     public SocketResponse rerender(@PathVariable String gameId){
         Board board=this.gameSessionService.getBoard(gameId);
@@ -92,40 +87,75 @@ public class ApiController {
         return sr;
     }
 
+    // current turn in vplayer
     @GetMapping("/api/game/turn/{gameId}")
     public String turn(@PathVariable String gameId){
         GameData gd = repo.findByGameId(gameId)
             .orElseThrow(() -> new RuntimeException("Game not found"));
 
         String turn=this.gameSessionService.getTurn(gameId);
-        if(turn.equals("white")){
-            return gd.getPlayer1Id();
-        }
-        else{
-            return gd.getPlayer2Id();
-        }
+        return turn;
+    }
+    
+
+    // Bot Game Endpoints
+
+    // create  vbot gameId
+    @GetMapping("/api/game/bot/create/{fTurn}/{difficulty}")
+    public ResponseEntity<?> createBotGame(@PathVariable String fTurn, @PathVariable Integer difficulty) {
+        String gameId = UUID.randomUUID().toString().substring(0, 6);
+        Map<String, String> response = new HashMap<>();
+        response.put("gameId", gameId);
+        Boolean ck=this.gameSessionService.addBotGame(gameId,fTurn,difficulty);
+        if(ck){
+            return ResponseEntity.ok(response);}
+        
+        return ResponseEntity
+                    .status(HttpStatus.BAD_REQUEST)
+                    .body("Error occured.");
+                    
     }
 
-    @GetMapping("/api/game/isSafe/{gameId}")
-    public ResponseEntity<BoolResponse> isSafe(@PathVariable String gameId){
-        BoolResponse res=this.chessService.isSafe(getCurrentState(gameId).getBoard());
-
-        if(res.getRes()){
-            return ResponseEntity.ok(res);
+    // make move in vbot 
+    @GetMapping("/api/game/bot/move/{or}/{oc}/{nr}/{nc}/{gameId}/{uniqueId}")
+    public MoveResponse makeBotMove( @PathVariable int or, @PathVariable int oc,@PathVariable int nr, @PathVariable int nc,@PathVariable String gameId,@PathVariable String uniqueId){  
+        
+        Boolean validMove= this.gameSessionService.moveBotService(or,oc,nr,nc,gameId,uniqueId); 
+        BoolResponse bs1=this.chessService.isSafe(getBotCurrentState(gameId).getBoard());
+        BoolResponse bs2=this.gameSessionService.checkBotWin(getBotCurrentState(gameId));
+        
+        if(bs2.getRes()){
+            this.gameSessionService.setBotWin(gameId,bs2);
         }
-        else{
-            return new ResponseEntity<>(res, HttpStatus.BAD_REQUEST);
-        }
+        MoveResponse mr=new MoveResponse(validMove,bs1,bs2);
+        return mr;
     }
 
-    @GetMapping("/api/game/Win/{gameId}")
-    public ResponseEntity<BoolResponse> isWin(@PathVariable String gameId){
-        BoolResponse res=this.gameSessionService.checkWin(getCurrentState(gameId));
+    // fetch current board state vbot
+    @GetMapping("/api/game/bot/board/{gameId}")
+    public Board getBotCurrentState(@PathVariable String gameId) {
+        return this.gameSessionService.getBotBoard(gameId);
+    }
 
-        if(res.getRes()){
-            return ResponseEntity.ok(res);
-         }
-         else{
-           return new ResponseEntity<>(res, HttpStatus.BAD_REQUEST);}
+    // fetch current state after vbot move
+    @GetMapping("/api/game/bot/rerender/{gameId}")
+    public SocketResponse botRerender(@PathVariable String gameId){
+        Board board=this.gameSessionService.getBotBoard(gameId);
+        String turn=botTurn(gameId);
+        BoolResponse isSafe=this.chessService.isSafe(getBotCurrentState(gameId).getBoard());
+        BoolResponse isWin=this.gameSessionService.checkBotWin(getBotCurrentState(gameId));
+
+        SocketResponse sr=new SocketResponse(board, turn, isSafe, isWin);
+        return sr;
+    }
+
+    // current turn in vbot
+    @GetMapping("/api/game/bot/turn/{gameId}")
+    public String botTurn(@PathVariable String gameId){
+        GameData gd = repo.findByGameId(gameId)
+            .orElseThrow(() -> new RuntimeException("Game not found"));
+
+        String turn=this.gameSessionService.getBotTurn(gameId);
+        return turn;
     }
 }

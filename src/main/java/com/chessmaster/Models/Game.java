@@ -9,11 +9,25 @@ public class Game {
     private ArrayList<User> spectators;
     private Board board;
     private String turn;
+    private Integer difficulty;
 
-    public Game(String gameId) {
+    public Game(String gameId,String fTurn) {
         this.spectators = new ArrayList<>();
         this.board = new Board(gameId);
-        this.turn = "white"; // Default turn to white
+        if(fTurn==null || fTurn.isEmpty()){
+            fTurn="white";
+        }
+        this.turn = fTurn ; // Default turn to white
+        this.difficulty=-1;
+    }
+    public Game(String gameId,String fTurn,Integer difficulty) {
+        this.spectators = new ArrayList<>();
+        this.board = new Board(gameId);
+        if(fTurn==null || fTurn.isEmpty()){
+            fTurn="white";
+        }
+        this.turn = fTurn ; // Default turn to white
+        this.difficulty=difficulty;
     }
     
     public Game(String gameId, User player1Id, User player2Id, ArrayList<User> spectators, Board board,
@@ -24,6 +38,7 @@ public class Game {
         this.spectators = spectators;
         this.board = board;
         this.turn = turn;
+        this.difficulty=-1;
     }
 
     public String getGameId() {
@@ -73,6 +88,15 @@ public class Game {
     public void setTurn(String turn) {
         this.turn = turn;
     }
+    
+    public Integer getDifficulty() {
+        return difficulty;
+    }
 
+    public void setDifficulty(Integer difficulty) {
+        this.difficulty = difficulty;
+    }
 
 }
+    
+

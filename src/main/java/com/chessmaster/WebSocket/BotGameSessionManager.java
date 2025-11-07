@@ -11,18 +11,28 @@ import org.springframework.web.socket.WebSocketSession;
 
 import com.chessmaster.Models.Game;
 import com.chessmaster.Models.GameData;
+import com.chessmaster.Models.Move;
+import com.chessmaster.Models.Piece;
 import com.chessmaster.Models.User;
 import com.chessmaster.Repo.GameEntityRepo;
 import com.chessmaster.Repo.UserRepo;
+import com.chessmaster.Service.ChessService;
+import com.chessmaster.StockFish.FenUtil;
+import com.chessmaster.Models.BoolResponse;
 
 @Component
-public class GameSessionManager {
-
+public class BotGameSessionManager {
+     
     @Autowired
     private GameEntityRepo gameRepo;
 
+    @Autowired ChessService chessService;
+
     @Autowired
     private UserRepo userRepo;
+
+    @Autowired
+    private FenUtil fenUtil;
 
     // gameId -> Game object created externally (controller)
     private final Map<String, Game> games = new ConcurrentHashMap<>();
@@ -30,9 +40,6 @@ public class GameSessionManager {
     // playerId or spectatorId -> WebSocketSession for all connected users
     private final Map<User, WebSocketSession> sessions = new ConcurrentHashMap<>();
 
-    /**
-     * Register a game when created externally (controller)
-     */
     public Boolean registerGame(Game game) {
         if (game != null && game.getGameId() != null) {
             games.put(game.getGameId(), game);
@@ -46,10 +53,54 @@ public class GameSessionManager {
         }
     }
 
-    /**
-     * Add a user to the game as player or spectator.
-     * Returns true if added as player, false if added as spectator or if game doesn't exist.
-     */
+    public Boolean isBotTurn(String gameId){
+        Game game = games.get(gameId);
+        if(game==null) return false;
+        User bot=game.getPlayer2Id();
+        if(bot==null) return false;
+        if(game.getTurn().equals(bot.getColor())){
+            return true;
+        }
+        return false;
+    }
+
+    public void handleBotMove(String gameId){
+    Game game = games.get(gameId);
+    if (game == null) return;
+    User player = game.getPlayer1Id();
+    User bot = game.getPlayer2Id();
+    if (bot == null) return;
+
+    Piece[][] gameBoard = game.getBoard().getBoard();
+    String turn = game.getTurn();
+
+    String fen = FenUtil.boardToFEN(gameBoard, turn);
+
+    Move botMove = fenUtil.getnxtMove(fen, game.getDifficulty());
+
+    if (botMove == null) {
+        return;
+    }
+
+    Boolean ck = chessService.makeMove(
+        game.getGameId(),
+        botMove.getOr(), botMove.getOc(),
+        botMove.getNr(), botMove.getNc(),
+        game.getBoard(), bot, game.getTurn()
+    );
+
+    if (ck) {
+        String nextTurn = bot.getColor().equals("white") ? "black" : "white";
+        BoolResponse bs = chessService.isWin(game.getBoard(),player,bot);
+        if (bs.getRes()) {
+            setWin(gameId, bot.getColor());
+        }
+        game.setTurn(nextTurn);
+    }
+    else{
+        handleBotMove(gameId);
+    }
+}
 
     public void setWin(String gameId,String color){
         GameData gd = gameRepo.findByGameId(gameId)
@@ -75,22 +126,22 @@ public class GameSessionManager {
 
         synchronized (game) {
             User p1=game.getPlayer1Id();
-            User p2=game.getPlayer2Id();
+            
             GameData gd = gameRepo.findByGameId(gameId)
             .orElseThrow(() -> new RuntimeException("Game not found"));
             User user =new User(gameId,playerId,uniqueId);
+            User user1 =new User(gameId,playerId,uniqueId);
+            User user2= new User(gameId,"bot","bot-"+gameId);
             if (p1 == null) {
-                user.setType("player");
-                user.setColor(game.getTurn());    
+                user1.setType("player");
+                user1.setColor(game.getTurn());    
 
                 gd.setPlayer1Id(playerId);
                 gameRepo.save(gd);
-                userRepo.save(user);
-                game.setPlayer1Id(user);
-                sessions.put(user, session);
-                return true;
-            } 
-            else if (p2 == null) {
+                userRepo.save(user1);
+                game.setPlayer1Id(user1);
+                sessions.put(user1, session);
+            
                 String turn;
                 if(game.getTurn().equals("white")){
                     turn="black";
@@ -98,14 +149,12 @@ public class GameSessionManager {
                 else{
                     turn="white";
                 }
-                user.setType("player");
-                user.setColor(turn);
-                game.setPlayer2Id(user);
-                sessions.put(user, session);
-
-                gd.setPlayer2Id(playerId);
+                user2.setType("bot");
+                user2.setColor(turn);
+                game.setPlayer2Id(user2);
+                gd.setPlayer2Id("bot");
+                userRepo.save(user2);
                 gameRepo.save(gd);
-                userRepo.save(user);
 
                 return true;
             } 
@@ -190,7 +239,6 @@ public class GameSessionManager {
     }
 }
 
-
     private void cleanupGameIfEmpty(String gameId) {
         Game game = games.get(gameId);
         if (game == null) return;
@@ -199,10 +247,6 @@ public class GameSessionManager {
         }
     }
 
-    /**
-     * Get all WebSocket sessions for recipients except the sender.
-     * Includes other player and all spectators.
-     */
     public List<WebSocketSession> getReceivers(String gameId, String senderId) {
         List<WebSocketSession> receivers = new ArrayList<>();
         Game game = games.get(gameId);

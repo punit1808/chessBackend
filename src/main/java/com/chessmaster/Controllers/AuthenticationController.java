@@ -1,21 +1,25 @@
 package com.chessmaster.Controllers;
 
+import java.util.Optional;
+
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+
+import com.chessmaster.Models.LoginUserDto;
+import com.chessmaster.Models.RegisterUserDto;
+import com.chessmaster.Models.Users;
+import com.chessmaster.Service.AuthenticationService;
+import com.chessmaster.Service.JwtService;
+import com.chessmaster.responses.LoginResponse;
+
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
-import com.chessmaster.Models.LoginUserDto;
-import com.chessmaster.Models.RegisterUserDto;
-import com.chessmaster.Models.Users;
-import com.chessmaster.responses.LoginResponse;
-import com.chessmaster.Service.AuthenticationService;
-import com.chessmaster.Service.JwtService;
-
-import java.util.Optional;
-
-@CrossOrigin("*")
 @RequestMapping("/api/v1/auth")
 @RestController
 public class AuthenticationController {
