@@ -1,7 +1,9 @@
 package com.chessmaster.Config;
 
+import java.util.Arrays;
 import java.util.List;
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
@@ -19,6 +21,9 @@ import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 @EnableWebSecurity
 @Configuration
 public class SecurityConfiguration {
+
+    @Value("${allowed_origin}")
+    private String allowedOrigins;
 
     private final AuthenticationProvider authenticationProvider;
 
@@ -39,9 +44,7 @@ public class SecurityConfiguration {
             .cors(withDefaults())
             .csrf(csrf -> csrf.disable())
                 .authorizeHttpRequests((authorize) ->
-                        authorize.requestMatchers(HttpMethod.POST, "/api/v1/auth/**").permitAll()
-                                .requestMatchers("/api/v1/auth/live").permitAll()
-                                .requestMatchers("/wss/**").permitAll()
+                        authorize.requestMatchers("/wss/**").permitAll()
                                 .anyRequest().authenticated()
 
                 ).sessionManagement(session -> session
@@ -57,7 +60,12 @@ public class SecurityConfiguration {
 
         CorsConfiguration configuration = new CorsConfiguration();
 
-        configuration.setAllowedOrigins(List.of("https://chess-frontend-xi.vercel.app","https://chess-frontend-git-main-punit1808s-projects.vercel.app","https://chess-frontend-b86ac8bv9-punit1808s-projects.vercel.app","http://localhost:3000"));
+        configuration.setAllowedOrigins(
+            Arrays.stream(allowedOrigins.split(","))
+                .map(String::trim)
+                .toList()
+        );
+
         configuration.setAllowedMethods(List.of("GET","POST","PUT","DELETE","OPTIONS"));
         configuration.setAllowedHeaders(List.of("Authorization","Content-Type"));
         configuration.setAllowCredentials(true);
