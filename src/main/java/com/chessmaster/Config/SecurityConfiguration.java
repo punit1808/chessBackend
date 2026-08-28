@@ -44,7 +44,8 @@ public class SecurityConfiguration {
             .cors(withDefaults())
             .csrf(csrf -> csrf.disable())
                 .authorizeHttpRequests((authorize) ->
-                        authorize.requestMatchers("/wss/**").permitAll()
+                        authorize.requestMatchers("/api/v1/auth/live").permitAll()
+                        .requestMatchers("/wss/**").permitAll()
                                 .anyRequest().authenticated()
 
                 ).sessionManagement(session -> session
