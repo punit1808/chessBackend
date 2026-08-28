@@ -62,11 +62,7 @@ public class SecurityConfiguration {
 
         CorsConfiguration configuration = new CorsConfiguration();
 
-        configuration.setAllowedOrigins(
-            Arrays.stream(allowedOrigins.split(","))
-                .map(String::trim)
-                .toList()
-        );
+        configuration.setAllowedOrigins(List.of("https://chess-frontend-xi.vercel.app","https://chess-frontend-git-main-punit1808s-projects.vercel.app","https://chess-frontend-b86ac8bv9-punit1808s-projects.vercel.app","http://localhost:3000","https://chess-frontend-keglfklyl-punit1808s-projects.vercel.app"));
 
         configuration.setAllowedMethods(List.of("GET","POST","PUT","DELETE","OPTIONS"));
         configuration.setAllowedHeaders(List.of("*"));
