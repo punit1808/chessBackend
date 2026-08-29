@@ -47,7 +47,7 @@ public class SecurityConfiguration {
                         authorize.requestMatchers(HttpMethod.POST, "/api/v1/auth/**").permitAll()
                         .requestMatchers("/api/v1/auth/live").permitAll()
                         .requestMatchers("/wss/**").permitAll()
-                                .anyRequest().authenticated()
+                                .anyRequest().permitAll()
 
                 ).sessionManagement(session -> session
                         .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
